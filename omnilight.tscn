@@ -1,0 +1,6 @@
+[gd_scene format=2]
+
+[node name="OmniLight" type="OmniLight"]
+light_energy = 7.71
+omni_range = 73.2
+omni_attenuation = 0.133972

@@ -7,6 +7,10 @@ physics or vision-based ML model to learn from.
 
 Your noob competitor's helicopter bots keep dropping apple crates all over the country.  You being way cooler, have only a day to train your way advanced quadcopters how to prioritize saving all the spilt apples before they start to rot! Having no real world data to draw from, you quickly realize the best way to recover the goods is by always picking up the highest object in the stack of mess, which disturbs the rest of the cargo the least.  You grab the Godot physics engine, some 3d scans of what your quadcopters need to pick up, and viola, you run a million simulations of the following to teach your quadcopters what to prioritize without ever leaving your beloved chair!
 
+# Watch the Video!
+
+[Download video here](https://github.com/gittyeric/godot-ml-trainer/raw/main/apple_drop.mov)
+
 # Example Solution Details
 
 Since the quadcopters will traverse vast diverse landscapes, we want to train against randomized versions of what they'd see in the real world, ideally a large superset of whatever might actually be seen.  To accomplish this almost

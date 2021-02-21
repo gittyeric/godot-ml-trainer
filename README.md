@@ -37,13 +37,10 @@ prioritize the next set of sim features you randomize.
 
 1. Download Godot version 3.2 (maybe greater?)
 2. Clone this repository
-3. Open this repo (godot-ml-trainer)
-4. Because GitHub limits max file size, you need to regenerate the apple before you can run, to do this, go to the Import tab on the top left
-5. With Import tab selected, select "apple.glb" in the file selector at the bottom-left.
-6. With apple now open in the Import tab, click "Reimport".  This will regenerate the large texture files needed to run
-7. Make sure the "snapshots" folder exists as a neighbor of the "godot-ml-trainer" folder (or change location in `main.gd`).
-8. Click the Play button on the upper-right!
-9. Hack away at main.gd until you've got the sim you need.
+3. Open Godot, select Import, select project file type (not zip), and browse for this project's project.godot file (in godot-ml-trainer).
+4. Make sure the "snapshots" folder exists as a neighbor of the "godot-ml-trainer" folder (or change location in `main.gd`).
+5. Click the Play button on the upper-right!
+6. Hack away at main.gd until you've got the sim you need.
 
 ## Godot vs X
 

@@ -21,8 +21,7 @@ every aspect of the simulation is randomized:
 - Objects: Objects vary up to 10% in size, random colors and start positions.
 - Camera: Very high and very low views with random camera rotation
 
-The output is a CSV containing image references and bounding boxes around the highest object found in the images.  The CSV writing logic can be adapted to fit whatever your model's software requires.  Check out the `gcp` branch
-to generate a Google Machine Vision friendly version of the CSV file.
+The output is a CSV containing image references and bounding boxes around the highest object found in the images.  The CSV writing logic can be adapted to fit whatever your model's software requires.
 
 # TODO: Results
 

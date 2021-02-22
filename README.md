@@ -47,5 +47,9 @@ prioritize the next set of sim features you randomize.
 
 ## Godot vs X
 
-Unity is also a great game engine for photorealistic simulations, though much more complex and a higher learning curve.  GDScript is very Pythonic and fairly friendly for the data science community.  Unity is best for very advanced simulation,
-and Godot for basic or intermediate complexity.
+Unity is also a great game engine for photorealistic simulations, though much more complex, has a higher learning curve and stricter licensing making parrallel runs more restritive.  GDScript is very Pythonic and fairly friendly for the data science community.  Unity is best for very advanced simulation,
+and Godot for basic or intermediate complexity.  I'll hopefully get around to running this on Kubernetes so you can generate data as quickly as you need it, something you have to pay a lot for in Unity.
+
+Gazebo holds promise but does not easily support high-res graphics.
+
+Unreal Engine can work but requires low-level C++, often a huge barrier to a basic simulation.  Unreal also has licensing restrictions.

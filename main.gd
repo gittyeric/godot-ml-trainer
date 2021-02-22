@@ -290,7 +290,7 @@ func randomize_light(light):
 
 func randomize_lighting():
 	for i in range(current_lights.size()):
-		remove_child(current_lights[i])
+		current_lights[i].free()
 	current_lights = []
 	var light_count = randomizer.randi_range(0, max_lights)
 	for i in range(light_count):

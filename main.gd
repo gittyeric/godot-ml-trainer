@@ -156,6 +156,7 @@ func take_labelled_snapshot(counter):
 		invalid_solution = true
 	if invalid_solution:
 		print("Skipping invalid training datum")
+		return random_id
 	
 	csv_file.store_line(csvRow)
 	queue_camera_snapshot(snapshot_folder + "/" + img_filename)

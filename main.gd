@@ -108,7 +108,7 @@ func reset_environment():
 	iterations += 1
 	# Remove old environment first
 	for i in range(current_objects.size()):
-		remove_child(current_objects[i])
+		current_objects[i].free()
 	current_objects = []
 	
 	randomize_background(ground)

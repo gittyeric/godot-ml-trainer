@@ -7,27 +7,27 @@ extends Node
 const snapshot_folder = "../snapshots"
 const labels_file = '../labels'
 # Max number of random objects dropped into scene
-const max_object_instances = 140
+const max_object_instances = 100
 # Max scale factor randomly applied to objects
 const max_object_scale = 0.1 # 10%
 # Seconds before taking a snapshot and resetting environment
-const secs_between_reset = 4
+const secs_between_reset = 3
 # Speeds up simulation time for faster training data generatation
 # Speeding up too much may cause physics issues
-const time_multiplier = 20
+const time_multiplier = 50
 # Wait this many seconds after training data is saved to debug label result
-const debug_secs = 0.3 * time_multiplier
+const debug_secs = 1 * time_multiplier
 # All settings devoted to randomizing the camera angle
 # This assumes an overhead view looking down
-const max_jitter_degrees = 9
-const max_distance_from_center = 0.5 # For both X and Z
+const max_jitter_degrees = 15
+const max_distance_from_center = 2 # For both X and Z
 const max_camera_lift = 20   # For Y axis
 # All settings for lighting
-const max_lights = 5
+const max_lights = 6
 const min_range = 50.0
 const max_range = 90
 const min_attentuation = 0.1
-const max_attentuation = 0.9
+const max_attentuation = 1.0
 const max_light_lift = 200
 const min_light_lift = 35
 const max_light_dist_from_center = 10
@@ -89,9 +89,16 @@ func _process(delta):
 	if secs_since_reset > secs_between_reset:
 		if phase == 0:
 			phase = -1
+			# Turn on shadows at the last second to save on rendering work
+			# but still get it in the captured image
+			for i in range(current_lights.size()):
+				if randomizer.randf_range(0.0, 1.0) > 0.2:
+					current_lights[i].shadow_enabled = true
 			for i in range(current_objects.size()):
 				# Set mode to static to stop it from moving
 				current_objects[i].set_mode(1)
+				# Turn on more detailed shadows
+				current_objects[i].get_child(0).cast_shadow = 2
 			# Skip 1 frame to let the mode update settle
 			yield(get_tree(), "idle_frame")
 			take_labelled_snapshot(iterations)
@@ -135,6 +142,18 @@ func reset_environment():
 		current_objects.append(obj)
 		randomize_lighting()
 
+func is_valid_training_data(obj, bounding_box):
+	# Only log the image if valid
+	# Invalid case 1: object went through floor
+	if obj.transform.origin.y < 0:
+		print("Skipping invalid training datum: Target went thru floor")
+		return false
+	# Invalid case 2: object not completely on screen
+	if not Rect2(Vector2(0, 0), get_viewport().get_size()).encloses(bounding_box):
+		print("Skipping invalid training datum: Target is partly off-screen")
+		return false
+	return true
+
 # Takes a snapshot of the scene and appends the associated
 # label to labels.csv
 # Warning! This function takes 2 frames to complete!
@@ -142,23 +161,22 @@ func take_labelled_snapshot(counter):
 	# super long random_id to almost ensure stateless uniqueness
 	var random_id = str(counter) + "-" + str(randomizer.randi()) + str(randomizer.randi())
 	
+	var cam_dims = get_viewport().get_size()
 	var img_filename = random_id + ".png"
 	var highest_obj = find_highest_obj(current_objects)
 	var bounding_box = find2d_bounding_box(highest_obj)
-	var csvRow = format_csv_row(img_filename, bounding_box)
 	
-	# Only log the image if valid
-	# Invalid case 1: object went through floor
-	var invalid_solution = false
-	if highest_obj.transform.origin.y < 0:
-		invalid_solution = true
-	if not Rect2(Vector2(0, 0), get_viewport().get_size()).encloses(bounding_box):
-		invalid_solution = true
-	if invalid_solution:
-		print("Skipping invalid training datum")
+	if not is_valid_training_data(highest_obj, bounding_box):
 		return random_id
 	
-	csv_file.store_line(csvRow)
+	# Print low labels for all objs that aren't highest
+	for i in range(current_objects.size()):
+		var obj = current_objects[i]
+		var low_box = find2d_bounding_box(obj)
+		if obj != highest_obj and is_valid_training_data(obj, low_box):
+			append_csv_row(cam_dims, img_filename, low_box, "low")
+	append_csv_row(cam_dims, img_filename, bounding_box, "highest")
+	
 	queue_camera_snapshot(snapshot_folder + "/" + img_filename)
 	debug_box.update_bounding_box([bounding_box])
 	return random_id
@@ -172,8 +190,17 @@ func queue_camera_snapshot(filename):
 	img.flip_y()
 	img.save_png(filename)
 
-func format_csv_row(img_filename, bounding_box):
-	return img_filename + "," + str(bounding_box.position.x) + "," + str(bounding_box.position.y) + "," + str(bounding_box.end.x) + "," + str(bounding_box.end.y)
+func append_csv_row(cam_dims,img_filename, bounding_box, label):
+	var cam_width = cam_dims.x
+	var cam_height = cam_dims.y
+	
+	var normalizedX1 = bounding_box.position.x / cam_width
+	var normalizedY1 = bounding_box.position.y / cam_height
+	var normalizedX2 = bounding_box.end.x / cam_width
+	var normalizedY2 = bounding_box.end.y / cam_height
+	
+	var line = "img_filename + "," + label + "," + str(normalizedX1) + "," + str(normalizedY1) + "," + str(normalizedX2) + "," + str(normalizedY2) + ","
+	csv_file.store_line(line)
 
 # Returns the obj in the objs array that contains the largest Y value
 func find_highest_obj(objs):
@@ -286,6 +313,7 @@ func randomize_light(light):
 	light.transform.origin.x += randomizer.randf_range(-max_light_dist_from_center, max_light_dist_from_center)
 	light.transform.origin.z += randomizer.randf_range(-max_light_dist_from_center, max_light_dist_from_center)
 	light.transform.origin.y += randomizer.randf_range(min_light_lift, max_light_lift)
+	light.shadow_color = Color(randomizer.randi_range(0, 0.1), randomizer.randi_range(0, 0.1), randomizer.randi_range(0, 0.1), randomizer.randi_range(0, 1))
 	return light
 
 func randomize_lighting():
